@@ -855,6 +855,7 @@ function toggleNotAlani(){
   if(!on) document.getElementById('teklif-not').value = '';
 }
 let savedTeklifler = []; // tekliflerim listesi
+let lastQuoteData = null; // son oluşturulan teklif verisi
 const SAVED_KEY = 'teklif_saved_v2';
 
 function saveSavedTeklifler(){
@@ -866,36 +867,27 @@ function loadSavedTeklifler(){
 }
 
 function saveTeklif(){
-  const el=document.getElementById('quote-pdf-target');
-  if(!el){toast('Önce teklif oluştur.');return;}
-  const firmaAdi=document.getElementById('firma-adi').value.trim()||'Müşteri';
-  const not=document.getElementById('not-check').checked?document.getElementById('teklif-not').value.trim():'';
-  const sel=products.filter(function(p){return getState(p.id).checked;});
-  let total=0;
-  const items=sel.map(function(p){
-    const s=getState(p.id);
-    const price=(s.kar===null&&s.manual===null)?0:(s.manual!=null?s.manual:satisFiyati(p.cost,s.kar));
-    const adet=s.adet||1;
-    total+=price*adet;
-    // img'yi kaydetme — Firestore limiti için
-    return {id:p.id,name:p.name,price:price,adet:adet,termin:p.termin,firsat:p.firsat,cat:p.cat||''};
-  });
-  const teklif={
+  if(!lastQuoteData){toast('Önce teklif oluştur.');return;}
+  var d=lastQuoteData;
+  var finalTotal=d.useManualTotal&&d.manualTotalVal>0?d.manualTotalVal:d.total;
+  var teklif={
     id:Date.now(),
-    firma:firmaAdi,
-    tarih:new Date().toLocaleDateString('tr-TR',{year:'numeric',month:'long',day:'numeric'}),
+    firma:d.firma||document.getElementById('firma-adi').value.trim()||'Müşteri',
+    tarih:d.tarih||new Date().toLocaleDateString('tr-TR',{year:'numeric',month:'long',day:'numeric'}),
     tarihTs:Date.now(),
-    total:total,
-    items:items,
-    not:not,
+    total:finalTotal,
+    items:d.items,
+    not:d.not||'',
+    useManualTotal:d.useManualTotal||false,
+    manualTotalVal:d.manualTotalVal||0,
     status:'beklemede'
-    // html kaydedilmiyor — önizlemede yeniden oluşturulacak
   };
   savedTeklifler.unshift(teklif);
   saveSavedTeklifler();
   renderSaved();
-  toast('"'+firmaAdi+'" teklifi Tekliflerim sayfasına kaydedildi.');
+  toast('"'+teklif.firma+'" teklifi Tekliflerim sayfasına kaydedildi.');
 }
+
 
 function delSaved(id){
   if(!confirm('Bu teklifi silmek istediğine emin misin?'))return;
@@ -1540,6 +1532,7 @@ function generateQuote(){
   const thR=thStyle+'text-align:right;';
 
   let rowsHtml='';
+  var quoteItems=[];
   sel.forEach(function(p){
     const s=getState(p.id);
     const price=s.manual!=null?s.manual:satisFiyati(p.cost,s.kar);
@@ -1548,6 +1541,7 @@ function generateQuote(){
     const kazanc=price*adet;
     totalMaliyet+=maliyet;
     totalKazanc+=kazanc;
+    quoteItems.push({id:p.id,name:p.name,price:price,adet:adet,termin:p.termin,firsat:p.firsat,cat:p.cat||''});
 
     const imgCell=p.img
       ? '<img src="'+p.img+'" style="width:72px;height:72px;border-radius:8px;object-fit:cover;display:block">'
@@ -1653,6 +1647,7 @@ function generateQuote(){
       +'<button class="btn-pdf" onclick="triggerPrint()"><i class="ti ti-file-type-pdf"></i> PDF indir</button>'
     +'</div>';
 
+  lastQuoteData={firma:firmaAdi,tarih:now,total:totalKazanc,items:quoteItems,not:teklifNot,useManualTotal:useManualTotal,manualTotalVal:manualTotalVal};
   document.getElementById('quote-out').innerHTML=out;
 }
 
