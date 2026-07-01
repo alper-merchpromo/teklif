@@ -225,6 +225,8 @@ function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[ty
     <button class="nav-item" onclick="goView(&#39;tedarikciler&#39;,this)"><i class="ti ti-building-store"></i> Tedarikçiler</button>
     <button class="nav-item" onclick="goView(&#39;tekliflerim&#39;,this)"><i class="ti ti-archive"></i> Tekliflerim</button>
     <div class="nav-sep"></div>
+    <div class="nav-item" style="cursor:default;opacity:.45;pointer-events:none"><i class="ti ti-map-route"></i> Ziyaret Planı <span style="font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:1px 6px;margin-left:4px;font-weight:500">Yakında</span></div>
+    <div class="nav-sep"></div>
     <div class="nav-stats" id="db-stats">6 ürün kayıtlı</div>
     <div class="nav-stats"><span id="sync-badge" style="font-size: 11px; color: rgb(21, 128, 61);">Senkronize ✓</span></div>
   </nav>
@@ -333,27 +335,6 @@ function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[ty
         <p>Henüz ürün eklenmedi.<br>Yukarıdaki formu kullanarak başlayabilirsin.</p>
       </div>
 
-      <!-- FOOTER EDITÖR -->
-      <div class="add-form" style="margin-top:1.5rem">
-        <div class="form-toggle-row" onclick="toggleHitapForm()">
-          <span><i class="ti ti-user" style="font-size:14px"></i> Mail hitabı</span>
-          <div style="display:flex;align-items:center;gap:10px;pointer-events:none">
-            <span id="hitap-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent-text)"></span>
-            <i class="ti ti-chevron-down chevron" id="hitap-chevron"></i>
-          </div>
-        </div>
-        <div id="hitap-form-body" style="display:none;margin-top:14px;border-top:.5px solid var(--border);padding-top:14px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <input type="checkbox" id="hitap-check" style="width:16px;height:16px;flex-shrink:0" onchange="toggleHitapFields()">
-            <label for="hitap-check" style="font-size:13px;color:var(--text-sec);cursor:pointer">Kişisel hitap kullan (ad ve soyad ile seslen)</label>
-          </div>
-          <div id="hitap-fields" style="display:none;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="field"><label>Ad</label><input type="text" id="hitap-ad" placeholder="Ahmet" oninput="updateHitap()"></div>
-            <div class="field"><label>Soyad</label><input type="text" id="hitap-soyad" placeholder="Yılmaz" oninput="updateHitap()"></div>
-          </div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:10px">İşaretlenirse teklif başlığında "Sayın Ahmet Yılmaz" şeklinde görünür.</p>
-        </div>
-      </div>
       <div class="footer-editor-wrap">
         <div class="form-toggle-row" onclick="toggleFooterForm()" style="margin-bottom:0">
           <span><i class="ti ti-layout-bottombar" style="font-size:14px"></i> Footer (teklif alt bilgisi)</span>
@@ -437,6 +418,28 @@ function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[ty
         </div>
         <div class="firma-col">
           <div class="field"><label>Firma adı</label><input type="text" id="firma-adi" placeholder="Müşteri firmanın adı"></div>
+
+          <div class="add-form" style="margin-top:12px;padding:1rem">
+            <div class="form-toggle-row" onclick="toggleHitapForm()">
+              <span><i class="ti ti-user" style="font-size:14px"></i> Mail hitabı</span>
+              <div style="display:flex;align-items:center;gap:10px;pointer-events:none">
+                <span id="hitap-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent-text)"></span>
+                <i class="ti ti-chevron-down chevron" id="hitap-chevron"></i>
+              </div>
+            </div>
+            <div id="hitap-form-body" style="display:none;margin-top:14px;border-top:.5px solid var(--border);padding-top:14px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <input type="checkbox" id="hitap-check" style="width:16px;height:16px;flex-shrink:0" onchange="toggleHitapFields()">
+                <label for="hitap-check" style="font-size:13px;color:var(--text-sec);cursor:pointer">Kişisel hitap kullan (ad ve soyad ile seslen)</label>
+              </div>
+              <div id="hitap-fields" style="display:none;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="field"><label>Ad</label><input type="text" id="hitap-ad" placeholder="Ahmet" oninput="updateHitap()"></div>
+                <div class="field"><label>Soyad</label><input type="text" id="hitap-soyad" placeholder="Yılmaz" oninput="updateHitap()"></div>
+              </div>
+              <p style="font-size:11px;color:var(--text-muted);margin-top:10px">İşaretlenirse teklif başlığında "Sayın Ahmet Yılmaz" şeklinde görünür.</p>
+            </div>
+          </div>
+
           <p style="font-size:12px;color:var(--text-muted);line-height:1.5">Her ürün için ayrı kar oranı veya manuel tutar belirleyebilirsin. Satır başındaki kutucuğu işaretleyerek teklife ekle.</p>
         </div>
       </div>
@@ -542,6 +545,7 @@ function showSyncBadge(msg,ok,warn){
 }
 
 function loadDB(){
+  // 1. Önce localStorage'dan yükle (hızlı başlangıç)
   try{const r=localStorage.getItem(STORAGE_KEY);if(r)products=JSON.parse(r);}catch(e){products=[];}
   try{const sr=localStorage.getItem(SUP_KEY);if(sr)suppliers=JSON.parse(sr);}catch(e){suppliers=[];}
   loadSavedTeklifler();
@@ -549,16 +553,45 @@ function loadDB(){
   document.getElementById('footer-text').value=ft||DEFAULT_FOOTER;
   applyAllData();
 
+  // 2. Firestore'dan güncelle — sadece Firestore'da veri VARSA localStorage'ı güncelle
   const tryFS=()=>{
     if(typeof fsGet==='undefined'||typeof db==='undefined'){setTimeout(tryFS,300);return;}
     showSyncBadge('Senkronize ediliyor…');
     Promise.all([fsGet('products'),fsGet('suppliers'),fsGet('saved'),fsGet('footer')])
     .then(([p,s,sv,ft])=>{
-      if(p){products=JSON.parse(p);localStorage.setItem(STORAGE_KEY,p);}
-      if(s){suppliers=JSON.parse(s);localStorage.setItem(SUP_KEY,s);}
-      if(sv){savedTeklifler=JSON.parse(sv);localStorage.setItem(SAVED_KEY,sv);}
-      if(ft){document.getElementById('footer-text').value=ft;localStorage.setItem(FOOTER_KEY,ft);}
-      applyAllData();
+      var changed=false;
+      // Firestore'dan gelen veri VARSA ve geçerliyse güncelle
+      // Yoksa localStorage'daki veriyi koru
+      if(p&&p.length>2){
+        try{
+          var fsProducts=JSON.parse(p);
+          // Firestore'daki veri localStorage'dakinden daha fazla ürün içeriyorsa veya
+          // localStorage boşsa güncelle
+          if(fsProducts.length>=products.length){
+            products=fsProducts;
+            localStorage.setItem(STORAGE_KEY,p);
+            changed=true;
+          }
+        }catch(e){}
+      }
+      if(s&&s.length>2){
+        try{
+          var fsSuppliers=JSON.parse(s);
+          if(fsSuppliers.length>=suppliers.length){
+            suppliers=fsSuppliers;
+            localStorage.setItem(SUP_KEY,s);
+            changed=true;
+          }
+        }catch(e){}
+      }
+      if(sv&&sv.length>2){
+        try{savedTeklifler=JSON.parse(sv);localStorage.setItem(SAVED_KEY,sv);changed=true;}catch(e){}
+      }
+      if(ft&&ft.length>2){
+        document.getElementById('footer-text').value=ft;
+        localStorage.setItem(FOOTER_KEY,ft);
+      }
+      if(changed)applyAllData();
       showSyncBadge('Senkronize ✓',true);
     }).catch(err=>{
       console.warn('Firestore hata:',err);
@@ -568,13 +601,21 @@ function loadDB(){
   tryFS();
 
   window._onRemoteUpdate=(type)=>{
-    if(isLocked(type)){ return; } // kendi yazımız, görmezden gel
-    if(type==='products'&&window._products_remote){products=window._products_remote;localStorage.setItem(STORAGE_KEY,JSON.stringify(products));renderDB();updateStats();}
+    if(isLocked(type)){return;}
+    if(type==='products'&&window._products_remote){
+      // Realtime update: sadece kendi yazımız değilse ve daha fazla/eşit ürün varsa güncelle
+      if(window._products_remote.length>=products.length){
+        products=window._products_remote;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
+        renderDB();updateStats();
+      }
+    }
     if(type==='suppliers'&&window._suppliers_remote){suppliers=window._suppliers_remote;localStorage.setItem(SUP_KEY,JSON.stringify(suppliers));renderSuppliers();updateSupDropdowns();}
-    if(type==='saved'&&window._saved_remote){savedTeklifler=window._saved_remote;localStorage.setItem(SAVED_KEY,JSON.stringify(savedTeklifler));renderSaved();}
+    if(type==='saved'&&window._saved_remote){savedTeklifler=window._saved_remote;localStorage.setItem(SAVED_KEY,JSON.stringify(savedTeklifler));if(typeof renderSaved==='function')renderSaved();}
     if(type==='footer'&&window._footer_remote){document.getElementById('footer-text').value=window._footer_remote;}
   };
 }
+
 function saveFooter(){
   const txt=document.getElementById('footer-text').value;
   try{localStorage.setItem(FOOTER_KEY,txt);}catch(e){}
@@ -756,7 +797,8 @@ function renderSuppliers(){
   list.style.display='block';empty.style.display='none';
   if(label)label.textContent='Tedarikçiler ('+suppliers.length+')';
   list.innerHTML='';
-  suppliers.forEach(function(s){
+  var sortedSuppliers=suppliers.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');});
+  sortedSuppliers.forEach(function(s){
     var card=document.createElement('div');
     card.style.cssText='background:#fff;border:.5px solid #e5e7eb;border-radius:12px;margin-bottom:10px;overflow:hidden';
 
@@ -853,6 +895,7 @@ function toggleNotAlani(){
   if(!on) document.getElementById('teklif-not').value = '';
 }
 let savedTeklifler = []; // tekliflerim listesi
+let lastQuoteData = null; // son oluşturulan teklif verisi
 const SAVED_KEY = 'teklif_saved_v2';
 
 function saveSavedTeklifler(){
@@ -864,46 +907,27 @@ function loadSavedTeklifler(){
 }
 
 function saveTeklif(){
-  const el=document.getElementById('quote-pdf-target');
-  if(!el){toast('Önce teklif oluştur.');return;}
-  const firmaAdi=document.getElementById('firma-adi').value.trim()||'Müşteri';
-  const not=document.getElementById('not-check').checked?document.getElementById('teklif-not').value.trim():'';
-  const sel=products.filter(function(p){return getState(p.id).checked;});
-  let total=0;
-  const items=sel.map(function(p){
-    const s=getState(p.id);
-    const price=(s.kar===null&&s.manual===null)?0:(s.manual!=null?s.manual:satisFiyati(p.cost,s.kar));
-    const adet=s.adet||1;
-    total+=price*adet;
-    // img'yi kaydetme — Firestore limiti için
-    return {id:p.id,name:p.name,price:price,adet:adet,termin:p.termin,firsat:p.firsat,cat:p.cat||''};
-  });
-  const teklif={
+  if(!lastQuoteData){toast('Önce teklif oluştur.');return;}
+  var d=lastQuoteData;
+  var finalTotal=d.useManualTotal&&d.manualTotalVal>0?d.manualTotalVal:d.total;
+  var teklif={
     id:Date.now(),
-    firma:firmaAdi,
-    tarih:new Date().toLocaleDateString('tr-TR',{year:'numeric',month:'long',day:'numeric'}),
+    firma:d.firma||document.getElementById('firma-adi').value.trim()||'Müşteri',
+    tarih:d.tarih||new Date().toLocaleDateString('tr-TR',{year:'numeric',month:'long',day:'numeric'}),
     tarihTs:Date.now(),
-    total:total,
-    items:items,
-    not:not,
+    total:finalTotal,
+    items:d.items,
+    not:d.not||'',
+    useManualTotal:d.useManualTotal||false,
+    manualTotalVal:d.manualTotalVal||0,
     status:'beklemede'
-    // html kaydedilmiyor — önizlemede yeniden oluşturulacak
   };
   savedTeklifler.unshift(teklif);
   saveSavedTeklifler();
   renderSaved();
-  toast('"'+firmaAdi+'" teklifi kaydedildi.');
-  document.getElementById('quote-out').innerHTML='';
-  document.getElementById('not-check').checked=false;
-  document.getElementById('not-alani').style.display='none';
-  document.getElementById('teklif-not').value='';
-  // Manuel toplam checkbox'ı sıfırla
-  var mtc=document.getElementById('manual-total-check');
-  if(mtc){mtc.checked=false;toggleManualTotal();}
-  // Tekliflerim sayfasına geç
-  var tekliflerimBtn=document.querySelector('.nav-item[onclick*="tekliflerim"]');
-  if(tekliflerimBtn) goView('tekliflerim', tekliflerimBtn);
+  toast('"'+teklif.firma+'" teklifi Tekliflerim sayfasına kaydedildi.');
 }
+
 
 function delSaved(id){
   if(!confirm('Bu teklifi silmek istediğine emin misin?'))return;
@@ -997,55 +1021,124 @@ function previewSaved(id){
 }
 
 function renderSaved(){
-  const list=document.getElementById('saved-list');
-  const empty=document.getElementById('saved-empty');
-  const label=document.getElementById('saved-count-label');
+  var list=document.getElementById('saved-list');
+  var empty=document.getElementById('saved-empty');
+  var label=document.getElementById('saved-count-label');
   if(!list)return;
-  if(!savedTeklifler.length){list.style.display='none';empty.style.display='block';if(label)label.textContent='Kayıtlı teklifler (0)';return;}
+  if(!savedTeklifler.length){
+    list.style.display='none';empty.style.display='block';
+    if(label)label.textContent='Kayıtlı teklifler (0)';return;
+  }
   list.style.display='block';empty.style.display='none';
   if(label)label.textContent='Kayıtlı teklifler ('+savedTeklifler.length+')';
-  const statusOpts=['beklemede','gonderildi','onaylandi','iptal'];
-  const statusLabel={'beklemede':'Beklemede','gonderildi':'Gönderildi','onaylandi':'Onaylandı','iptal':'İptal'};
-  list.innerHTML=savedTeklifler.map(function(t){
-    const st=t.status||'beklemede';
-    const itemsHtml=t.items.map(function(i){
-      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 18px;border-bottom:.5px solid #f3f4f6">'
-        +(function(){var pr=products.find(function(p){return p.id===i.id;});var src=pr&&pr.img?pr.img:null;
-        return src?'<img src="'+src+'" style="width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0">'
-        :'<div style="width:44px;height:44px;border-radius:7px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-photo" style="font-size:15px;color:#d1d5db"></i></div>';})()
-        +'<div style="flex:1"><div style="font-size:13px;font-weight:500">'+esc(i.name)+'</div>'
-        +'<div style="font-size:11px;color:#9a9a94">'+i.adet+' adet</div></div>'
-        +'<div style="text-align:right;font-size:13px;font-weight:600">'+fmt(i.price*i.adet)+' TL</div>'
-      +'</div>';
-    }).join('');
-    const selectHtml='<select onchange="setStatus('+t.id+',this.value)" style="font-size:12px;padding:4px 8px;border:.5px solid var(--border-strong);border-radius:20px;background:#fff;cursor:pointer;outline:none;color:#5a5a56">'
-      +statusOpts.map(function(s){return '<option value="'+s+'"'+(s===st?' selected':'')+'>'+statusLabel[s]+'</option>';}).join('')
-      +'</select>';
-    return '<div class="saved-card">'
-      +'<div class="saved-card-head" onclick="toggleSavedCard('+t.id+')">'
-        +'<div style="display:flex;align-items:center;gap:12px">'
-          +'<div style="width:40px;height:40px;border-radius:10px;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-invoice" style="font-size:20px;color:var(--accent)"></i></div>'
-          +'<div>'
-            +'<div style="font-size:14px;font-weight:600">'+esc(t.firma)+'</div>'
-            +'<div style="font-size:11px;color:#9a9a94;margin-top:2px">'+t.tarih+' · '+t.items.length+' ürün · <strong style="color:#1a1a18">'+fmt(t.total)+' TL</strong></div>'
-          +'</div>'
-        +'</div>'
-        +'<div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">'
-          +'<span class="status-badge status-'+st+'">'+statusLabel[st]+'</span>'
-          +selectHtml
-          +'<button type="button" onclick="delSaved('+t.id+')" class="btn-danger"><i class="ti ti-trash"></i></button>'
-          +'<i class="ti ti-chevron-down" style="font-size:16px;color:#9a9a94;transition:transform .2s" id="sca-'+t.id+'"></i>'
+
+  var statusOpts=['beklemede','gonderildi','onaylandi','iptal'];
+  var statusLabel={beklemede:'Beklemede',gonderildi:'Gönderildi',onaylandi:'Onaylandı',iptal:'İptal'};
+  var statusColor={beklemede:'#a16207',gonderildi:'#1d4ed8',onaylandi:'#15803d',iptal:'#dc2626'};
+  var statusBg={beklemede:'#fefce8',gonderildi:'#eff6ff',onaylandi:'#f0fdf4',iptal:'#fef2f2'};
+
+  list.innerHTML='';
+
+  savedTeklifler.forEach(function(t){
+    var st=t.status||'beklemede';
+
+    // Ürün görsel önizlemesi (ilk 4 ürün)
+    var thumbsHtml='';
+    t.items.slice(0,4).forEach(function(i){
+      var pr=products.find(function(p){return p.id===i.id;});
+      var src=pr&&pr.img?pr.img:null;
+      thumbsHtml+=src
+        ?'<img src="'+src+'" style="width:36px;height:36px;border-radius:8px;object-fit:cover;border:2px solid #fff;margin-left:-8px;flex-shrink:0">'
+        :'<div style="width:36px;height:36px;border-radius:8px;background:#f3f4f6;border:2px solid #fff;margin-left:-8px;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:12px;color:#d1d5db"></i></div>';
+    });
+    if(t.items.length>4){
+      thumbsHtml+='<div style="width:36px;height:36px;border-radius:8px;background:#1a1a18;border:2px solid #fff;margin-left:-8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff">+'+( t.items.length-4)+'</div>';
+    }
+
+    // Detay ürün satırları
+    var itemsHtml='';
+    t.items.forEach(function(i){
+      var pr=products.find(function(p){return p.id===i.id;});
+      var src=pr&&pr.img?pr.img:null;
+      var imgHtml=src
+        ?'<img src="'+src+'" style="width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0">'
+        :'<div style="width:52px;height:52px;border-radius:10px;background:#f3f4f6;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:18px;color:#d1d5db"></i></div>';
+      var firsatBadge=i.firsat?'<span style="font-size:10px;padding:1px 6px;border-radius:6px;background:#f0fdf4;color:#15803d;border:.5px solid #bbf7d0;font-weight:600;margin-top:3px;display:inline-block">🏷 Fırsat</span>':'';
+      itemsHtml+='<div style="display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:.5px solid #f5f5f3">'+imgHtml+'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a18">'+esc(i.name)+'</div>'+(i.cat?'<div style="font-size:11px;color:#9a9a94;margin-top:1px">'+esc(i.cat)+'</div>':'')+(firsatBadge?'<div>'+firsatBadge+'</div>':'')+'<div style="font-size:11px;color:#9a9a94;margin-top:3px"><i class="ti ti-truck-delivery" style="font-size:11px;vertical-align:-1px"></i> '+esc(i.termin)+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:15px;font-weight:700;color:#1a1a18">'+fmt(i.price*i.adet)+' TL</div><div style="font-size:11px;color:#9a9a94;margin-top:2px">'+i.adet+' adet · '+fmt(i.price)+' TL/ad.</div></div></div>';
+    });
+
+    var card=document.createElement('div');
+    card.style.cssText='background:#fff;border-radius:16px;border:.5px solid #e8e8e5;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:box-shadow .15s';
+    card.onmouseenter=function(){this.style.boxShadow='0 4px 16px rgba(0,0,0,.09)';};
+    card.onmouseleave=function(){this.style.boxShadow='0 1px 4px rgba(0,0,0,.05)';};
+
+    // Kart başlık alanı
+    var head=document.createElement('div');
+    head.style.cssText='padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:12px;user-select:none';
+
+    // Sol: firma + ürün thumbnails
+    head.innerHTML=
+      '<div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0">'
+        +'<div style="display:flex;align-items:center;margin-left:8px;flex-shrink:0">'+thumbsHtml+'</div>'
+        +'<div style="min-width:0">'
+          +'<div style="font-size:15px;font-weight:700;color:#1a1a18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(t.firma)+'</div>'
+          +'<div style="font-size:12px;color:#9a9a94;margin-top:2px">'+t.tarih+' · '+t.items.length+' ürün</div>'
         +'</div>'
       +'</div>'
-      +'<div class="saved-card-body" id="scb-'+t.id+'">'
-        +itemsHtml
-        +'<div style="padding:10px 18px;background:#f9f9f8;display:flex;justify-content:flex-end;gap:8px">'
-          +'<button type="button" onclick="previewSaved('+t.id+')" class="btn-ghost btn-sm"><i class="ti ti-eye"></i> Önizle / PDF</button>'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'
+        +'<div style="text-align:right">'
+          +'<div style="font-size:16px;font-weight:700;color:#1a1a18">'+fmt(t.total)+' TL</div>'
+          +'<span style="display:inline-block;margin-top:3px;font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600;background:'+statusBg[st]+';color:'+statusColor[st]+'">'+statusLabel[st]+'</span>'
         +'</div>'
+        +'<i class="ti ti-chevron-down" style="font-size:18px;color:#c0c0b8;transition:transform .25s;flex-shrink:0"></i>'
+      +'</div>';
+
+    // Detay alanı (kapalı)
+    var body=document.createElement('div');
+    body.style.cssText='display:none;border-top:.5px solid #f0f0ee';
+
+    // Detay içi: durum + önizle toolbar
+    var toolbar='<div style="padding:10px 20px;background:#f9f9f8;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid #f0f0ee">'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:12px;color:#5a5a56">Durum:</span>'
+        +'<select data-tid="'+t.id+'" class="status-sel" style="font-size:12px;padding:4px 10px;border:.5px solid #e0e0dc;border-radius:20px;background:#fff;cursor:pointer;outline:none;color:#1a1a18;font-weight:500">'
+          +statusOpts.map(function(s){return '<option value="'+s+'"'+(s===st?' selected':'')+'>'+statusLabel[s]+'</option>';}).join('')
+        +'</select>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px">'
+        +'<button type="button" class="prev-btn" style="background:#fff;border:.5px solid #e0e0dc;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:#1a1a18;font-family:inherit"><i class="ti ti-eye"></i> Önizle / PDF</button>'
+        +'<button type="button" class="del-btn" style="background:#fff;border:.5px solid #fecaca;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:#dc2626;font-family:inherit"><i class="ti ti-trash"></i></button>'
       +'</div>'
     +'</div>';
-  }).join('');
+
+    body.innerHTML=toolbar+itemsHtml;
+    card.appendChild(head);
+    card.appendChild(body);
+    list.appendChild(card);
+
+    var chev=head.querySelector('.ti-chevron-down');
+
+    // Aç/kapat
+    head.addEventListener('click',function(){
+      var open=body.style.display==='block';
+      body.style.display=open?'none':'block';
+      if(chev)chev.style.transform=open?'':'rotate(180deg)';
+    });
+
+    // Durum değiştir
+    body.querySelector('.status-sel').addEventListener('change',function(e){
+      e.stopPropagation();
+      setStatus(t.id,e.target.value);
+    });
+
+    // Önizle
+    body.querySelector('.prev-btn').addEventListener('click',function(){previewSaved(t.id);});
+
+    // Sil
+    body.querySelector('.del-btn').addEventListener('click',function(){delSaved(t.id);});
+  });
 }
+
 
 function toggleHitapForm(){
   const open=document.getElementById('hitap-form-body').style.display==='block';
@@ -1186,7 +1279,8 @@ function renderDB(){
   if(!products.length){grid.style.display='none';empty.style.display='block';return;}
   grid.style.display='grid';empty.style.display='none';
   let html='';
-  products.forEach(function(p){
+  var sortedProducts=products.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');});
+  sortedProducts.forEach(function(p){
     const imgHtml=p.img
       ?'<img src="'+p.img+'" alt="'+esc(p.name)+'">'
       :'<i class="ti ti-photo" style="font-size:28px;color:#d1d5db"></i>';
@@ -1347,7 +1441,8 @@ function renderTeklifTable(){
   var tbody=document.getElementById('sel-tbody');
   tbody.innerHTML='';
 
-  products.forEach(function(p){
+  var sortedProducts=products.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');});
+  sortedProducts.forEach(function(p){
     var s=getState(p.id);
     var price=(s.kar===null&&s.manual===null)?0:(s.manual!=null?s.manual:satisFiyati(p.cost,s.kar));
     var adet=s.adet||1;
@@ -1477,6 +1572,7 @@ function generateQuote(){
   const thR=thStyle+'text-align:right;';
 
   let rowsHtml='';
+  var quoteItems=[];
   sel.forEach(function(p){
     const s=getState(p.id);
     const price=s.manual!=null?s.manual:satisFiyati(p.cost,s.kar);
@@ -1485,6 +1581,7 @@ function generateQuote(){
     const kazanc=price*adet;
     totalMaliyet+=maliyet;
     totalKazanc+=kazanc;
+    quoteItems.push({id:p.id,name:p.name,price:price,adet:adet,termin:p.termin,firsat:p.firsat,cat:p.cat||''});
 
     const imgCell=p.img
       ? '<img src="'+p.img+'" style="width:72px;height:72px;border-radius:8px;object-fit:cover;display:block">'
@@ -1590,6 +1687,7 @@ function generateQuote(){
       +'<button class="btn-pdf" onclick="triggerPrint()"><i class="ti ti-file-type-pdf"></i> PDF indir</button>'
     +'</div>';
 
+  lastQuoteData={firma:firmaAdi,tarih:now,total:totalKazanc,items:quoteItems,not:teklifNot,useManualTotal:useManualTotal,manualTotalVal:manualTotalVal};
   document.getElementById('quote-out').innerHTML=out;
 }
 
