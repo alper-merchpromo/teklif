@@ -1258,13 +1258,13 @@ function previewRevize(t,r){
       +'</td>'
       +'<td style="padding:12px 10px;text-align:right;vertical-align:middle;font-size:13px;color:#5a5a56">'+item.adet+'</td>'
       +'<td style="padding:12px 10px;text-align:right;vertical-align:middle">'
-        '<div style="font-size:13px;color:#9a9a94;text-decoration:line-through">'+fmt(item.oldTotal)+' TL</div>'
+        +'<div style="font-size:13px;color:#9a9a94;text-decoration:line-through">'+fmt(item.oldTotal)+' TL</div>'
       +'</td>'
       +'<td style="padding:12px 10px;text-align:right;vertical-align:middle">'
         +'<div style="font-size:'+(changed?'15':'13')+'px;font-weight:700;color:'+(changed?'#15803d':'#1a1a18')+'">'+fmt(item.revizeTotal)+' TL</div>'
       +'</td>'
     +'</tr>';
-  });
+  });;
   var bodyHtml='<div style="border:.5px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff">'
     +'<div style="padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #e5e7eb;background:#f9f9f8">'
       +'<div><div style="font-size:20px;font-weight:700;color:#1a1a18">'+esc(t.firma)+'</div>'
