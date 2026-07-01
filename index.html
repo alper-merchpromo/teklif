@@ -1226,12 +1226,16 @@ function saveRevize(){
   var revTotal=revItems.reduce(function(s,i){return s+i.revizeTotal;},0);
   var now=new Date().toLocaleDateString('tr-TR',{year:'numeric',month:'long',day:'numeric'});
   if(!t.revizeler)t.revizeler=[];
-  t.revizeler.push({id:Date.now(),tarih:now,total:revTotal,items:revItems});
+  var newRevize={id:Date.now(),tarih:now,total:revTotal,items:revItems};
+  t.revizeler.push(newRevize);
   saveSavedTeklifler();
   renderSaved();
   closeRevize();
   toast('Revize teklif kaydedildi.');
+  // PDF'i hemen aç
+  setTimeout(function(){previewRevize(t,newRevize);},300);
 }
+
 
 function previewRevize(t,r){
   var iconLink='https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css';
@@ -1254,7 +1258,9 @@ function previewRevize(t,r){
       +'</td>'
       +'<td style="padding:12px 10px;text-align:right;vertical-align:middle;font-size:13px;color:#5a5a56">'+item.adet+'</td>'
       +'<td style="padding:12px 10px;text-align:right;vertical-align:middle">'
-        +(changed?'<div style="font-size:12px;color:#9a9a94;text-decoration:line-through">'+fmt(item.oldTotal)+' TL</div>':'')
+        '<div style="font-size:13px;color:#9a9a94;text-decoration:line-through">'+fmt(item.oldTotal)+' TL</div>'
+      +'</td>'
+      +'<td style="padding:12px 10px;text-align:right;vertical-align:middle">'
         +'<div style="font-size:'+(changed?'15':'13')+'px;font-weight:700;color:'+(changed?'#15803d':'#1a1a18')+'">'+fmt(item.revizeTotal)+' TL</div>'
       +'</td>'
     +'</tr>';
@@ -1271,7 +1277,8 @@ function previewRevize(t,r){
         +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;width:68px"></th>'
         +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:left">Ürün</th>'
         +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:50px">Adet</th>'
-        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:130px">Toplam</th>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:110px">Eski Fiyat</th>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:120px">Revize Fiyat</th>'
       +'</tr></thead><tbody>'+rowsHtml+'</tbody>'
     +'</table>'
     +'<div style="border-top:1px solid #e5e7eb;padding:12px 24px;display:flex;justify-content:flex-end;gap:12px;align-items:baseline;background:#f9f9f8">'
