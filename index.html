@@ -1018,7 +1018,7 @@ function previewSaved(id){
   pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Teklif</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'
   <!-- Revize Modal (body child) -->
   <!-- Revize Teklif Modal -->
-  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
     <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
       <!-- Header -->
       <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
@@ -1385,7 +1385,7 @@ function previewRevize(t,r){
   pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Revize '+riNum+'</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'
   <!-- Revize Modal (body child) -->
   <!-- Revize Teklif Modal -->
-  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
     <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
       <!-- Header -->
       <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
@@ -1987,7 +1987,7 @@ function triggerPrint(){
   pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+firmaVal+' - Teklif</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+el.innerHTML+'
   <!-- Revize Modal (body child) -->
   <!-- Revize Teklif Modal -->
-  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
     <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
       <!-- Header -->
       <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
@@ -2036,7 +2036,7 @@ loadDB();
 
   <!-- Revize Modal (body child) -->
   <!-- Revize Teklif Modal -->
-  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
     <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
       <!-- Header -->
       <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
