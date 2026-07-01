@@ -1213,11 +1213,14 @@ function renderSaved(){
 
     // Aç/kapat
     var chev=head.querySelector('.chev-icon');
-    head.addEventListener('click',function(){
+    head.addEventListener('click',function(e){
+      // Sadece head'e tıklanınca aç/kapat — body içi tıklamalar buraya düşmez
       var open=body.style.display==='block';
       body.style.display=open?'none':'block';
       if(chev)chev.style.transform=open?'':'rotate(180deg)';
     });
+    // body tıklamalarının head'e yayılmasını engelle
+    body.addEventListener('click',function(e){e.stopPropagation();});
   });
 }
 
