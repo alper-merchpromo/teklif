@@ -237,43 +237,7 @@ function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[ty
     <div class="view active" id="view-db">
       <p class="page-title">Ürün veritabanı</p>
 
-            <!-- Revize Teklif Modal -->
-      <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
-        <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
-          <!-- Header -->
-          <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
-            <div>
-              <div style="font-size:17px;font-weight:700;color:#1a1a18">Revize Teklif</div>
-              <div style="font-size:12px;color:#9a9a94;margin-top:3px" id="revize-firma-label"></div>
-            </div>
-            <button type="button" onclick="closeRevize()" style="background:none;border:none;cursor:pointer;color:#9a9a94;font-size:22px;padding:2px;line-height:1"><i class="ti ti-x"></i></button>
-          </div>
-
-          <!-- Tablo başlığı -->
-          <div style="display:grid;grid-template-columns:1fr 120px 120px;gap:12px;padding:10px 24px;background:#f9f9f8;border-bottom:.5px solid #f0f0ee">
-            <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase">Ürün</div>
-            <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Eski fiyat</div>
-            <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Revize fiyat</div>
-          </div>
-
-          <!-- Ürün satırları -->
-          <div id="revize-items-wrap"></div>
-
-          <!-- Toplam -->
-          <div style="padding:14px 24px;background:#f9f9f8;border-top:.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px;color:#5a5a56">Revize genel toplam</span>
-            <span id="revize-total-val" style="font-size:20px;font-weight:700;color:#1a1a18"></span>
-          </div>
-
-          <!-- Butonlar -->
-          <div style="padding:16px 24px;border-top:.5px solid #f0f0ee;display:flex;justify-content:flex-end;gap:10px">
-            <button class="btn-ghost" type="button" onclick="closeRevize()">İptal</button>
-            <button class="btn-primary" type="button" onclick="saveRevize()"><i class="ti ti-device-floppy"></i> Kaydet</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ürün Düzenle Modal -->
+            <!-- Ürün Düzenle Modal -->
       <!-- Düzenle Modal -->
       <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center">
         <div style="background:#fff;border-radius:14px;padding:1.5rem;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto">
@@ -1051,7 +1015,45 @@ function previewSaved(id){
     +'</div>';
 
   var pw=window.open('','_blank');
-  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Teklif</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'</body></html>');
+  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Teklif</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'
+  <!-- Revize Modal (body child) -->
+  <!-- Revize Teklif Modal -->
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+    <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div style="font-size:17px;font-weight:700;color:#1a1a18">Revize Teklif</div>
+      <div style="font-size:12px;color:#9a9a94;margin-top:3px" id="revize-firma-label"></div>
+    </div>
+    <button type="button" onclick="closeRevize()" style="background:none;border:none;cursor:pointer;color:#9a9a94;font-size:22px;padding:2px;line-height:1"><i class="ti ti-x"></i></button>
+      </div>
+
+      <!-- Tablo başlığı -->
+      <div style="display:grid;grid-template-columns:1fr 120px 120px;gap:12px;padding:10px 24px;background:#f9f9f8;border-bottom:.5px solid #f0f0ee">
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase">Ürün</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Eski fiyat</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Revize fiyat</div>
+      </div>
+
+      <!-- Ürün satırları -->
+      <div id="revize-items-wrap"></div>
+
+      <!-- Toplam -->
+      <div style="padding:14px 24px;background:#f9f9f8;border-top:.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:12px;color:#5a5a56">Revize genel toplam</span>
+    <span id="revize-total-val" style="font-size:20px;font-weight:700;color:#1a1a18"></span>
+      </div>
+
+      <!-- Butonlar -->
+      <div style="padding:16px 24px;border-top:.5px solid #f0f0ee;display:flex;justify-content:flex-end;gap:10px">
+    <button class="btn-ghost" type="button" onclick="closeRevize()">İptal</button>
+    <button class="btn-primary" type="button" onclick="saveRevize()"><i class="ti ti-device-floppy"></i> Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+</body></html>');
   pw.document.close();
   pw.onload=function(){setTimeout(function(){pw.focus();pw.print();},800);};
 }
@@ -1380,7 +1382,45 @@ function previewRevize(t,r){
 
   var css='*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;color:#1a1a18;background:#fff}@page{size:A4;margin:14mm}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}tr{page-break-inside:avoid}}table{width:100%;border-collapse:collapse}.print-btn{display:block;margin:20px auto;padding:10px 32px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}';
   var pw=window.open('','_blank');
-  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Revize '+riNum+'</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'</body></html>');
+  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Revize '+riNum+'</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'
+  <!-- Revize Modal (body child) -->
+  <!-- Revize Teklif Modal -->
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+    <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div style="font-size:17px;font-weight:700;color:#1a1a18">Revize Teklif</div>
+      <div style="font-size:12px;color:#9a9a94;margin-top:3px" id="revize-firma-label"></div>
+    </div>
+    <button type="button" onclick="closeRevize()" style="background:none;border:none;cursor:pointer;color:#9a9a94;font-size:22px;padding:2px;line-height:1"><i class="ti ti-x"></i></button>
+      </div>
+
+      <!-- Tablo başlığı -->
+      <div style="display:grid;grid-template-columns:1fr 120px 120px;gap:12px;padding:10px 24px;background:#f9f9f8;border-bottom:.5px solid #f0f0ee">
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase">Ürün</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Eski fiyat</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Revize fiyat</div>
+      </div>
+
+      <!-- Ürün satırları -->
+      <div id="revize-items-wrap"></div>
+
+      <!-- Toplam -->
+      <div style="padding:14px 24px;background:#f9f9f8;border-top:.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:12px;color:#5a5a56">Revize genel toplam</span>
+    <span id="revize-total-val" style="font-size:20px;font-weight:700;color:#1a1a18"></span>
+      </div>
+
+      <!-- Butonlar -->
+      <div style="padding:16px 24px;border-top:.5px solid #f0f0ee;display:flex;justify-content:flex-end;gap:10px">
+    <button class="btn-ghost" type="button" onclick="closeRevize()">İptal</button>
+    <button class="btn-primary" type="button" onclick="saveRevize()"><i class="ti ti-device-floppy"></i> Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+</body></html>');
   pw.document.close();
   pw.onload=function(){setTimeout(function(){pw.focus();pw.print();},800);};
 }
@@ -1944,7 +1984,45 @@ function triggerPrint(){
   const iconLink='https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css';
   const css='*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,system-ui,sans-serif;font-size:13px;color:#1a1a18;background:#fff}@page{size:A4;margin:14mm}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}tr{page-break-inside:avoid}}table{width:100%;border-collapse:collapse}th{font-size:10px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb}th.r{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6;vertical-align:middle}td.r{text-align:right}.print-btn{display:block;margin:20px auto;padding:10px 32px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}';
   const pw=window.open('','_blank');
-  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+firmaVal+' - Teklif</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+el.innerHTML+'</body></html>');
+  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+firmaVal+' - Teklif</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+el.innerHTML+'
+  <!-- Revize Modal (body child) -->
+  <!-- Revize Teklif Modal -->
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+    <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div style="font-size:17px;font-weight:700;color:#1a1a18">Revize Teklif</div>
+      <div style="font-size:12px;color:#9a9a94;margin-top:3px" id="revize-firma-label"></div>
+    </div>
+    <button type="button" onclick="closeRevize()" style="background:none;border:none;cursor:pointer;color:#9a9a94;font-size:22px;padding:2px;line-height:1"><i class="ti ti-x"></i></button>
+      </div>
+
+      <!-- Tablo başlığı -->
+      <div style="display:grid;grid-template-columns:1fr 120px 120px;gap:12px;padding:10px 24px;background:#f9f9f8;border-bottom:.5px solid #f0f0ee">
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase">Ürün</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Eski fiyat</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Revize fiyat</div>
+      </div>
+
+      <!-- Ürün satırları -->
+      <div id="revize-items-wrap"></div>
+
+      <!-- Toplam -->
+      <div style="padding:14px 24px;background:#f9f9f8;border-top:.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:12px;color:#5a5a56">Revize genel toplam</span>
+    <span id="revize-total-val" style="font-size:20px;font-weight:700;color:#1a1a18"></span>
+      </div>
+
+      <!-- Butonlar -->
+      <div style="padding:16px 24px;border-top:.5px solid #f0f0ee;display:flex;justify-content:flex-end;gap:10px">
+    <button class="btn-ghost" type="button" onclick="closeRevize()">İptal</button>
+    <button class="btn-primary" type="button" onclick="saveRevize()"><i class="ti ti-device-floppy"></i> Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+</body></html>');
   pw.document.close();
   pw.onload=function(){setTimeout(function(){pw.focus();pw.print();},800);};
 }
@@ -1954,5 +2032,43 @@ function esc(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 loadDB();
 </script>
+
+
+  <!-- Revize Modal (body child) -->
+  <!-- Revize Teklif Modal -->
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto">
+    <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div style="font-size:17px;font-weight:700;color:#1a1a18">Revize Teklif</div>
+      <div style="font-size:12px;color:#9a9a94;margin-top:3px" id="revize-firma-label"></div>
+    </div>
+    <button type="button" onclick="closeRevize()" style="background:none;border:none;cursor:pointer;color:#9a9a94;font-size:22px;padding:2px;line-height:1"><i class="ti ti-x"></i></button>
+      </div>
+
+      <!-- Tablo başlığı -->
+      <div style="display:grid;grid-template-columns:1fr 120px 120px;gap:12px;padding:10px 24px;background:#f9f9f8;border-bottom:.5px solid #f0f0ee">
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase">Ürün</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Eski fiyat</div>
+    <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;text-align:right">Revize fiyat</div>
+      </div>
+
+      <!-- Ürün satırları -->
+      <div id="revize-items-wrap"></div>
+
+      <!-- Toplam -->
+      <div style="padding:14px 24px;background:#f9f9f8;border-top:.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:12px;color:#5a5a56">Revize genel toplam</span>
+    <span id="revize-total-val" style="font-size:20px;font-weight:700;color:#1a1a18"></span>
+      </div>
+
+      <!-- Butonlar -->
+      <div style="padding:16px 24px;border-top:.5px solid #f0f0ee;display:flex;justify-content:flex-end;gap:10px">
+    <button class="btn-ghost" type="button" onclick="closeRevize()">İptal</button>
+    <button class="btn-primary" type="button" onclick="saveRevize()"><i class="ti ti-device-floppy"></i> Kaydet</button>
+      </div>
+    </div>
+  </div>
 
 </body></html>
