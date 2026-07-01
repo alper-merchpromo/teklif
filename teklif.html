@@ -225,6 +225,8 @@ function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[ty
     <button class="nav-item" onclick="goView(&#39;tedarikciler&#39;,this)"><i class="ti ti-building-store"></i> Tedarikçiler</button>
     <button class="nav-item" onclick="goView(&#39;tekliflerim&#39;,this)"><i class="ti ti-archive"></i> Tekliflerim</button>
     <div class="nav-sep"></div>
+    <div class="nav-item" style="cursor:default;opacity:.45;pointer-events:none"><i class="ti ti-map-route"></i> Ziyaret Planı <span style="font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:1px 6px;margin-left:4px;font-weight:500">Yakında</span></div>
+    <div class="nav-sep"></div>
     <div class="nav-stats" id="db-stats">6 ürün kayıtlı</div>
     <div class="nav-stats"><span id="sync-badge" style="font-size: 11px; color: rgb(21, 128, 61);">Senkronize ✓</span></div>
   </nav>
@@ -543,6 +545,7 @@ function showSyncBadge(msg,ok,warn){
 }
 
 function loadDB(){
+  // 1. Önce localStorage'dan yükle (hızlı başlangıç)
   try{const r=localStorage.getItem(STORAGE_KEY);if(r)products=JSON.parse(r);}catch(e){products=[];}
   try{const sr=localStorage.getItem(SUP_KEY);if(sr)suppliers=JSON.parse(sr);}catch(e){suppliers=[];}
   loadSavedTeklifler();
@@ -550,16 +553,45 @@ function loadDB(){
   document.getElementById('footer-text').value=ft||DEFAULT_FOOTER;
   applyAllData();
 
+  // 2. Firestore'dan güncelle — sadece Firestore'da veri VARSA localStorage'ı güncelle
   const tryFS=()=>{
     if(typeof fsGet==='undefined'||typeof db==='undefined'){setTimeout(tryFS,300);return;}
     showSyncBadge('Senkronize ediliyor…');
     Promise.all([fsGet('products'),fsGet('suppliers'),fsGet('saved'),fsGet('footer')])
     .then(([p,s,sv,ft])=>{
-      if(p){products=JSON.parse(p);localStorage.setItem(STORAGE_KEY,p);}
-      if(s){suppliers=JSON.parse(s);localStorage.setItem(SUP_KEY,s);}
-      if(sv){savedTeklifler=JSON.parse(sv);localStorage.setItem(SAVED_KEY,sv);}
-      if(ft){document.getElementById('footer-text').value=ft;localStorage.setItem(FOOTER_KEY,ft);}
-      applyAllData();
+      var changed=false;
+      // Firestore'dan gelen veri VARSA ve geçerliyse güncelle
+      // Yoksa localStorage'daki veriyi koru
+      if(p&&p.length>2){
+        try{
+          var fsProducts=JSON.parse(p);
+          // Firestore'daki veri localStorage'dakinden daha fazla ürün içeriyorsa veya
+          // localStorage boşsa güncelle
+          if(fsProducts.length>=products.length){
+            products=fsProducts;
+            localStorage.setItem(STORAGE_KEY,p);
+            changed=true;
+          }
+        }catch(e){}
+      }
+      if(s&&s.length>2){
+        try{
+          var fsSuppliers=JSON.parse(s);
+          if(fsSuppliers.length>=suppliers.length){
+            suppliers=fsSuppliers;
+            localStorage.setItem(SUP_KEY,s);
+            changed=true;
+          }
+        }catch(e){}
+      }
+      if(sv&&sv.length>2){
+        try{savedTeklifler=JSON.parse(sv);localStorage.setItem(SAVED_KEY,sv);changed=true;}catch(e){}
+      }
+      if(ft&&ft.length>2){
+        document.getElementById('footer-text').value=ft;
+        localStorage.setItem(FOOTER_KEY,ft);
+      }
+      if(changed)applyAllData();
       showSyncBadge('Senkronize ✓',true);
     }).catch(err=>{
       console.warn('Firestore hata:',err);
@@ -569,13 +601,21 @@ function loadDB(){
   tryFS();
 
   window._onRemoteUpdate=(type)=>{
-    if(isLocked(type)){ return; } // kendi yazımız, görmezden gel
-    if(type==='products'&&window._products_remote){products=window._products_remote;localStorage.setItem(STORAGE_KEY,JSON.stringify(products));renderDB();updateStats();}
+    if(isLocked(type)){return;}
+    if(type==='products'&&window._products_remote){
+      // Realtime update: sadece kendi yazımız değilse ve daha fazla/eşit ürün varsa güncelle
+      if(window._products_remote.length>=products.length){
+        products=window._products_remote;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
+        renderDB();updateStats();
+      }
+    }
     if(type==='suppliers'&&window._suppliers_remote){suppliers=window._suppliers_remote;localStorage.setItem(SUP_KEY,JSON.stringify(suppliers));renderSuppliers();updateSupDropdowns();}
-    if(type==='saved'&&window._saved_remote){savedTeklifler=window._saved_remote;localStorage.setItem(SAVED_KEY,JSON.stringify(savedTeklifler));renderSaved();}
+    if(type==='saved'&&window._saved_remote){savedTeklifler=window._saved_remote;localStorage.setItem(SAVED_KEY,JSON.stringify(savedTeklifler));if(typeof renderSaved==='function')renderSaved();}
     if(type==='footer'&&window._footer_remote){document.getElementById('footer-text').value=window._footer_remote;}
   };
 }
+
 function saveFooter(){
   const txt=document.getElementById('footer-text').value;
   try{localStorage.setItem(FOOTER_KEY,txt);}catch(e){}
