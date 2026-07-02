@@ -1535,15 +1535,9 @@ function renderDB(){
 
 function getState(id){if(!rowStates[id])rowStates[id]={birimFiyat:0,checked:false,adet:1};if(rowStates[id].birimFiyat===undefined)rowStates[id].birimFiyat=0;return rowStates[id];}
 function setAdet(id,val){
-  const a=Math.max(1,parseInt(val)||1);
+  var a=Math.max(1,parseInt(val)||1);
   getState(id).adet=a;
-  const s=getState(id);
-  const p=products.find(x=>x.id===id);if(!p)return;
-  const price=(s.kar===null&&s.manual===null)?0:(s.manual!=null?s.manual:satisFiyati(p.cost,s.kar));
-  const tot=document.getElementById('tot-'+id);if(tot)tot.textContent=fmt(price*a)+' TL';
-  const mal=document.getElementById('mal-'+id);if(mal)mal.textContent=fmt(p.cost*a)+' TL';
-  const kaz=document.getElementById('kaz-'+id);if(kaz)kaz.textContent=fmt((price-p.cost)*a)+' TL';
-  renderGrandTotal();
+  refreshPrice(id);
 }
 function toggleManualTotal(){
   var on=document.getElementById('manual-total-check').checked;
@@ -1612,7 +1606,6 @@ function updateSelCount(){const n=products.filter(p=>getState(p.id).checked).len
 
 function setBirimFiyat(id,val){
   var s=getState(id);
-  var p=products.find(function(x){return x.id===id;});
   s.birimFiyat=parseFloat(val)||0;
   s.checked=s.birimFiyat>0;
   var chk=document.getElementById('chk-'+id);
@@ -1669,9 +1662,12 @@ function refreshPrice(id){
   var toplamHariç=birimFiyat*adet;
   var kdvTutar=toplamHariç*(kdv/100);
   var toplamDahil=toplamHariç+kdvTutar;
-  var tot=document.getElementById('tot-'+id);if(tot)tot.textContent=birimFiyat>0?fmt(toplamDahil)+' TL':'0 TL';
-  var totH=document.getElementById('tot-hariç-'+id);if(totH)totH.textContent=birimFiyat>0?fmt(toplamHariç)+' TL hariç':'';
-  var kdvt=document.getElementById('kdvt-'+id);if(kdvt)kdvt.textContent=birimFiyat>0?fmt(kdvTutar)+' TL':'0 TL';
+  var totWrap=document.getElementById('tot-'+id);
+  if(totWrap){totWrap.innerHTML=(birimFiyat>0?fmt(toplamDahil)+' TL':'0 TL');}
+  var totH=document.getElementById('tot-hariç-'+id);
+  if(totH){totH.textContent=birimFiyat>0?fmt(toplamHariç)+' TL hariç':'';}
+  var kdvt=document.getElementById('kdvt-'+id);
+  if(kdvt){kdvt.textContent=birimFiyat>0?fmt(kdvTutar)+' TL':'0 TL';}
   renderGrandTotal();
 }
 
