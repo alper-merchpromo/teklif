@@ -1806,8 +1806,11 @@ function generateQuote(){
         +'<div style="font-size:11px;color:#9a9a94;margin-top:2px"><i class="ti ti-truck-delivery" style="font-size:11px;vertical-align:-1px"></i> '+esc(p.termin)+'</div>'
         +catBadge+firsatBadge+setContentBadge
       +'</td>'
-      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;font-weight:500;color:#5a5a56;white-space:nowrap">'+adet+'</td>'
-      +(useManualTotal?'':'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;font-weight:600;white-space:nowrap">'+fmt(kazanc)+' TL</td>')
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">'+adet+'</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;font-weight:600">'+fmt(p.price||0)+' TL</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">%'+(p.kdv||20)+'</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">'+fmt(p.kdvTutar||0)+' TL</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700">'+fmt(p.toplamDahil||0)+' TL</td>'
       +'</tr>';
   });
 
