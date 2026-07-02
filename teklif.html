@@ -170,7 +170,7 @@ textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1
 // Firestore yazma kilidi
 var _writeLock = {};
 function acquireLock(type){ _writeLock[type] = Date.now(); }
-function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[type]) < 4000); }
+function isLocked(type){ return !!(_writeLock[type] && (Date.now()-_writeLock[type]) < 10000); }
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -527,11 +527,11 @@ function saveDB(){
   // localStorage fallback
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(products));}catch(e){}
   // Firestore sync
-  if(fsSet){ acquireLock('products'); fsSet('products', JSON.stringify(products)).catch(e=>console.warn('FS save err',e)); }
+  if(fsSet){ acquireLock('products'); fsSet('products', JSON.stringify(products)).then(function(){_writeLock['products']=null;}).catch(e=>console.warn('FS save err',e)); }
 }
 function saveSuppliers(){
   try{localStorage.setItem(SUP_KEY,JSON.stringify(suppliers));}catch(e){}
-  if(fsSet){ acquireLock('suppliers'); fsSet('suppliers', JSON.stringify(suppliers)).catch(e=>console.warn('FS save err',e)); }
+  if(fsSet){ acquireLock('suppliers'); fsSet('suppliers', JSON.stringify(suppliers)).then(function(){_writeLock['suppliers']=null;}).catch(e=>console.warn('FS save err',e)); }
 }
 function applyAllData(){
   products.forEach(p=>{if(!rowStates[p.id])rowStates[p.id]={kar:null,manual:null,manualType:'tutar',manualRaw:null,checked:false,adet:1};});
@@ -603,11 +603,13 @@ function loadDB(){
   window._onRemoteUpdate=(type)=>{
     if(isLocked(type)){return;}
     if(type==='products'&&window._products_remote){
-      // Realtime update: sadece kendi yazımız değilse ve daha fazla/eşit ürün varsa güncelle
       if(window._products_remote.length>=products.length){
         products=window._products_remote;
         localStorage.setItem(STORAGE_KEY,JSON.stringify(products));
         renderDB();updateStats();
+      } else {
+        // Lokal daha güncel — Firestore'u güncelle
+        if(fsSet){acquireLock('products');fsSet('products',JSON.stringify(products)).then(function(){_writeLock['products']=null;}).catch(function(e){console.warn(e);});}
       }
     }
     if(type==='suppliers'&&window._suppliers_remote){suppliers=window._suppliers_remote;localStorage.setItem(SUP_KEY,JSON.stringify(suppliers));renderSuppliers();updateSupDropdowns();}
@@ -1106,12 +1108,27 @@ function renderSaved(){
         +'</select>'
       +'</div>'
       +'<div style="display:flex;gap:8px">'
+        +'<button type="button" class="revize-btn" style="background:#1a1a18;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit"><i class="ti ti-refresh"></i> Revize</button>'
         +'<button type="button" class="prev-btn" style="background:#fff;border:.5px solid #e0e0dc;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:#1a1a18;font-family:inherit"><i class="ti ti-eye"></i> Önizle / PDF</button>'
         +'<button type="button" class="del-btn" style="background:#fff;border:.5px solid #fecaca;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;color:#dc2626;font-family:inherit"><i class="ti ti-trash"></i></button>'
       +'</div>'
     +'</div>';
 
-    body.innerHTML=toolbar+itemsHtml;
+    // Revizeler HTML
+    var revizeHtml='';
+    if(t.revizeler&&t.revizeler.length){
+      revizeHtml='<div style="border-top:.5px solid #f0f0ee;padding:12px 18px 8px;background:#fafaf9">';
+      revizeHtml+='<div style="font-size:10px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px">Revizeler ('+t.revizeler.length+')</div>';
+      t.revizeler.forEach(function(r,ri){
+        revizeHtml+='<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:9px;padding:10px 12px;margin-bottom:6px;border:.5px solid #e8e8e5">';
+        revizeHtml+='<div><div style="font-size:13px;font-weight:600;color:#1a1a18">Revize '+(ri+1)+'</div>';
+        revizeHtml+='<div style="font-size:11px;color:#9a9a94;margin-top:1px">'+r.tarih+' &middot; '+fmt(r.total)+' TL</div></div>';
+        revizeHtml+='<button type="button" class="revpdf-btn" data-ri="'+ri+'" style="background:#fff;border:.5px solid #e0e0dc;border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;color:#1a1a18;font-family:inherit;display:flex;align-items:center;gap:4px"><i class="ti ti-eye"></i> PDF</button>';
+        revizeHtml+='</div>';
+      });
+      revizeHtml+='</div>';
+    }
+    body.innerHTML=toolbar+itemsHtml+revizeHtml;
     card.appendChild(head);
     card.appendChild(body);
     list.appendChild(card);
@@ -1134,11 +1151,155 @@ function renderSaved(){
     // Önizle
     body.querySelector('.prev-btn').addEventListener('click',function(){previewSaved(t.id);});
 
+    // Revize
+    body.querySelector('.revize-btn').addEventListener('click',function(e){e.stopPropagation();openRevize(t.id);});
+
+    // Revize PDF butonları
+    body.querySelectorAll('.revpdf-btn').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        e.stopPropagation();
+        var ri=parseInt(btn.dataset.ri);
+        if(t.revizeler&&t.revizeler[ri])previewRevize(t,t.revizeler[ri]);
+      });
+    });
+
     // Sil
     body.querySelector('.del-btn').addEventListener('click',function(){delSaved(t.id);});
   });
 }
 
+
+let revizeTeklifId=null;
+
+function openRevize(id){
+  var t=savedTeklifler.find(function(x){return x.id===id;});
+  if(!t){toast('Teklif bulunamadı.');return;}
+  revizeTeklifId=id;
+  document.getElementById('revize-firma-label').textContent=t.firma+' — '+t.tarih;
+
+  var wrap=document.getElementById('revize-items-wrap');
+  var html='';
+  t.items.forEach(function(item,idx){
+    var pr=products.find(function(p){return p.id===item.id;});
+    var imgHtml=pr&&pr.img
+      ?'<img src="'+pr.img+'" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0">'
+      :'<div style="width:44px;height:44px;border-radius:8px;background:#f3f4f6;flex-shrink:0;display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:16px;color:#d1d5db"></i></div>';
+    html+='<div style="display:grid;grid-template-columns:1fr 130px 150px;gap:0;align-items:center;border-bottom:.5px solid #f5f5f3">'
+      +'<div style="display:flex;align-items:center;gap:12px;padding:12px 24px">'+imgHtml
+        +'<div><div style="font-size:13px;font-weight:600;color:#1a1a18">'+esc(item.name)+'</div>'
+        +'<div style="font-size:11px;color:#9a9a94;margin-top:2px">'+item.adet+' adet</div></div>'
+      +'</div>'
+      +'<div style="padding:12px;text-align:right;font-size:13px;color:#9a9a94;text-decoration:line-through">'+fmt(item.price*item.adet)+' TL</div>'
+      +'<div style="padding:12px 24px 12px 0;text-align:right">'
+        +'<input type="number" id="rev-inp-'+idx+'" data-idx="'+idx+'" data-adet="'+item.adet+'" value="'+(item.price*item.adet)+'" min="0" step="1" '
+        +'oninput="updateRevizeTotal()" '
+        +'style="width:110px;padding:6px 10px;font-size:14px;font-weight:600;border:.5px solid #e0e0dc;border-radius:8px;outline:none;text-align:right;color:#1a1a18;background:#fff">'
+      +'</div>'
+    +'</div>';
+  });
+  wrap.innerHTML=html;
+  updateRevizeTotal();
+  document.getElementById('revize-modal').style.display='block';
+}
+
+function closeRevize(){
+  document.getElementById('revize-modal').style.display='none';
+  revizeTeklifId=null;
+}
+
+function updateRevizeTotal(){
+  var total=0;
+  document.querySelectorAll('[id^="rev-inp-"]').forEach(function(inp){
+    total+=parseFloat(inp.value)||0;
+  });
+  var el=document.getElementById('revize-total-val');
+  if(el)el.textContent=fmt(total)+' TL';
+}
+
+function saveRevize(){
+  var t=savedTeklifler.find(function(x){return x.id===revizeTeklifId;});
+  if(!t){toast('Teklif bulunamadı.');return;}
+  var revItems=t.items.map(function(item,idx){
+    var inp=document.getElementById('rev-inp-'+idx);
+    var newTotal=parseFloat(inp?inp.value:item.price*item.adet)||0;
+    var newPrice=item.adet>0?newTotal/item.adet:newTotal;
+    return Object.assign({},item,{price:newPrice,oldPrice:item.price,revizeTotal:newTotal,oldTotal:item.price*item.adet});
+  });
+  var revTotal=revItems.reduce(function(s,i){return s+i.revizeTotal;},0);
+  var now=new Date().toLocaleDateString('tr-TR',{year:'numeric',month:'long',day:'numeric'});
+  if(!t.revizeler)t.revizeler=[];
+  var newRevize={id:Date.now(),tarih:now,total:revTotal,items:revItems};
+  t.revizeler.push(newRevize);
+  saveSavedTeklifler();
+  renderSaved();
+  closeRevize();
+  toast('Revize teklif kaydedildi.');
+  // PDF'i hemen aç
+  setTimeout(function(){previewRevize(t,newRevize);},300);
+}
+
+
+function previewRevize(t,r){
+  var iconLink='https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css';
+  var LOGO=typeof ECANTA_LOGO!=='undefined'?ECANTA_LOGO:'';
+  var MLOGO=typeof MERCHPROMO_LOGO!=='undefined'?MERCHPROMO_LOGO:'';
+  var footerText=document.getElementById('footer-text')?document.getElementById('footer-text').value.trim():'';
+  var riNum=(t.revizeler||[]).findIndex(function(x){return x.id===r.id;})+1;
+  var rowsHtml='';
+  r.items.forEach(function(item){
+    var pr=products.find(function(p){return p.id===item.id;});
+    var imgHtml=pr&&pr.img
+      ?'<img src="'+pr.img+'" style="width:56px;height:56px;border-radius:8px;object-fit:cover">'
+      :'<div style="width:56px;height:56px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:18px;color:#d1d5db"></i></div>';
+    var changed=item.oldPrice!==item.price;
+    rowsHtml+='<tr>'
+      +'<td style="padding:12px 10px;width:68px;vertical-align:middle">'+imgHtml+'</td>'
+      +'<td style="padding:12px 10px;vertical-align:middle">'
+        +'<div style="font-size:13px;font-weight:600;color:#1a1a18">'+esc(item.name)+'</div>'
+        +'<div style="font-size:11px;color:#9a9a94;margin-top:2px"><i class="ti ti-truck-delivery" style="font-size:11px"></i> '+esc(item.termin)+'</div>'
+      +'</td>'
+      +'<td style="padding:12px 10px;text-align:right;vertical-align:middle;font-size:13px;color:#5a5a56">'+item.adet+'</td>'
+      +'<td style="padding:12px 10px;text-align:right;vertical-align:middle">'
+        +'<div style="font-size:13px;color:#9a9a94;text-decoration:line-through">'+fmt(item.oldTotal!=null?item.oldTotal:(item.oldPrice||item.price)*item.adet)+' TL</div>'
+      +'</td>'
+      +'<td style="padding:12px 10px;text-align:right;vertical-align:middle">'
+        +'<div style="font-size:'+(changed?'15':'13')+'px;font-weight:700;color:'+(changed?'#15803d':'#1a1a18')+'">'+fmt(item.revizeTotal!=null?item.revizeTotal:item.price*item.adet)+' TL</div>'
+      +'</td>'
+    +'</tr>';
+  });;
+  var bodyHtml='<div style="border:.5px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff">'
+    +'<div style="padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #e5e7eb;background:#f9f9f8">'
+      +'<div><div style="font-size:20px;font-weight:700;color:#1a1a18">'+esc(t.firma)+'</div>'
+      +'<div style="font-size:12px;color:#9a9a94;margin-top:2px">Revize Teklif</div></div>'
+      +'<div style="text-align:right"><div style="font-size:12px;color:#5a5a56">'+r.tarih+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;width:68px"></th>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:left">Ürün</th>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:50px">Adet</th>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:110px">Eski Fiyat</th>'
+        +'<th style="font-size:10px;font-weight:600;color:#9a9a94;padding:8px 10px;background:#f9f9f8;border-bottom:1px solid #e5e7eb;text-align:right;width:120px">Revize Fiyat</th>'
+      +'</tr></thead><tbody>'+rowsHtml+'</tbody>'
+    +'</table>'
+    +'<div style="border-top:1px solid #e5e7eb;padding:12px 24px;display:flex;justify-content:flex-end;gap:12px;align-items:baseline;background:#f9f9f8">'
+      +'<span style="font-size:13px;color:#5a5a56">Revize toplam</span>'
+      +'<span style="font-size:22px;font-weight:700;color:#1a1a18">'+fmt(r.total)+' TL</span>'
+    +'</div>'
+    +'<div style="border-top:1px solid #e5e7eb;padding:12px 24px;font-size:10px;color:#9a9a94;line-height:1.8">KDV oranları ürün gruplarına göre %10 ile %20 arasında değişmektedir. Belirtilen fiyatlar KDV hariç fiyatlardır.<br>Ürün modelleri ve baskı uygulamaları çalışma öncesi teyit edilecektir. Tüm ürünlerde baskı işlemi fiyata dahildir.</div>'
+    +'<div style="border-top:1px solid #e5e7eb;padding:14px 24px;display:flex;align-items:flex-start;gap:14px">'
+      +(LOGO?'<img src="'+LOGO+'" style="height:24px;object-fit:contain;flex-shrink:0">':'')
+      +'<div style="font-size:10px;color:#5a5a56;line-height:1.9">'+(footerText?footerText.replace(/\n/g,'<br>'):'')+'</div>'
+    +'</div>'
+    +(MLOGO?'<div style="border-top:1px solid #f0f0ee;padding:8px 24px;display:flex;align-items:center;justify-content:center;gap:8px;background:#fafaf9"><span style="font-size:9px;color:#b5b5b0">Powered by</span><img src="'+MLOGO+'" style="height:16px;object-fit:contain;opacity:.5"></div>':'')
+    +'</div>';
+  var css='*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;color:#1a1a18;background:#fff}@page{size:A4;margin:14mm}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}}table{width:100%;border-collapse:collapse}.print-btn{display:block;margin:20px auto;padding:10px 32px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}';
+  var pw=window.open('','_blank');
+  pw.document.write('<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(t.firma)+' - Revize '+riNum+'</title><link rel="stylesheet" href="'+iconLink+'"><style>'+css+'</style></head><body><button class="print-btn no-print" onclick="window.print()">PDF olarak kaydet</button>'+bodyHtml+'</body></html>');
+  pw.document.close();
+  pw.onload=function(){setTimeout(function(){pw.focus();pw.print();},800);};
+}
 
 function toggleHitapForm(){
   const open=document.getElementById('hitap-form-body').style.display==='block';
@@ -1166,7 +1327,40 @@ function toggleFooterForm(){
 
 function handleImg(inp){
   const f=inp.files[0];if(!f)return;
-  const r=new FileReader();r.onload=e=>{pendingImg=e.target.result;document.getElementById('img-zone').innerHTML=`<img src="${pendingImg}" alt="">`;};r.readAsDataURL(f);
+  const r=new FileReader();
+  r.onload=e=>{
+    compressImg(e.target.result, 800, 0.7, function(compressed){
+      pendingImg=compressed;
+      document.getElementById('img-zone').innerHTML='<img src="'+compressed+'" alt="">';
+    });
+  };
+  r.readAsDataURL(f);
+}
+
+function compressImg(dataUrl, maxSize, quality, callback){
+  var img=new Image();
+  img.onload=function(){
+    var w=img.width, h=img.height;
+    // Maksimum boyutu aş
+    if(w>maxSize||h>maxSize){
+      if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
+      else{w=Math.round(w*maxSize/h);h=maxSize;}
+    }
+    var canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    var ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
+    var compressed=canvas.toDataURL('image/jpeg',quality);
+    // Eğer hâlâ büyükse daha fazla sıkıştır
+    if(compressed.length>150000){
+      compressed=canvas.toDataURL('image/jpeg',0.4);
+    }
+    if(compressed.length>100000){
+      compressed=canvas.toDataURL('image/jpeg',0.25);
+    }
+    callback(compressed);
+  };
+  img.src=dataUrl;
 }
 function handleLogo(inp){
   const f=inp.files[0];if(!f)return;
@@ -1710,4 +1904,33 @@ function esc(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 loadDB();
 </script>
 
+
+  <!-- Revize Teklif Modal -->
+  <div id="revize-modal" onclick="if(event.target===this)closeRevize()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;overflow-y:auto">
+    <div style="display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;min-height:100%">
+      <div style="background:#fff;border-radius:18px;width:680px;max-width:100%;box-shadow:0 8px 40px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
+        <div style="padding:20px 24px 16px;border-bottom:.5px solid #f0f0ee;display:flex;align-items:flex-start;justify-content:space-between">
+          <div>
+            <div style="font-size:17px;font-weight:700;color:#1a1a18">Revize Teklif</div>
+            <div style="font-size:12px;color:#9a9a94;margin-top:3px" id="revize-firma-label"></div>
+          </div>
+          <button type="button" onclick="closeRevize()" style="background:none;border:none;cursor:pointer;color:#9a9a94;font-size:22px;padding:2px;line-height:1"><i class="ti ti-x"></i></button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 130px 150px;gap:0;border-bottom:.5px solid #f0f0ee">
+          <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;padding:10px 24px;background:#f9f9f8">Ürün</div>
+          <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;padding:10px 12px;background:#f9f9f8;text-align:right">Eski fiyat</div>
+          <div style="font-size:11px;font-weight:600;color:#9a9a94;letter-spacing:.4px;text-transform:uppercase;padding:10px 24px 10px 12px;background:#f9f9f8;text-align:right">Revize fiyat</div>
+        </div>
+        <div id="revize-items-wrap"></div>
+        <div style="padding:14px 24px;background:#f9f9f8;border-top:.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#5a5a56">Revize genel toplam</span>
+          <span id="revize-total-val" style="font-size:20px;font-weight:700;color:#1a1a18"></span>
+        </div>
+        <div style="padding:16px 24px;border-top:.5px solid #f0f0ee;display:flex;justify-content:flex-end;gap:10px">
+          <button class="btn-ghost" type="button" onclick="closeRevize()">İptal</button>
+          <button class="btn-primary" type="button" onclick="saveRevize()"><i class="ti ti-device-floppy"></i> Kaydet</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body></html>
