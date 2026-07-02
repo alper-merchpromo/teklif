@@ -632,7 +632,8 @@ function goView(v,btn){
   document.getElementById('view-'+v).classList.add('active');btn.classList.add('active');
   if(v==='teklif'){
     products.forEach(p=>{
-      rowStates[p.id]={kar:null,manual:null,manualType:'tutar',manualRaw:null,checked:false,adet:getState(p.id).adet||1};
+      var prevAdet=getState(p.id).adet||1;
+      rowStates[p.id]={birimFiyat:0,checked:false,adet:prevAdet};
     });
     renderTeklifTable();
     // Önceki teklif çıktısını temizle
@@ -1807,10 +1808,10 @@ function generateQuote(){
         +catBadge+firsatBadge+setContentBadge
       +'</td>'
       +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">'+adet+'</td>'
-      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;font-weight:600">'+fmt(p.price||0)+' TL</td>'
-      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">%'+(p.kdv||20)+'</td>'
-      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">'+fmt(p.kdvTutar||0)+' TL</td>'
-      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700">'+fmt(p.toplamDahil||0)+' TL</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;font-weight:600">'+fmt(birimFiyat)+' TL</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">%'+kdv+'</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:13px;color:#5a5a56">'+fmt(kdvTutar)+' TL</td>'
+      +'<td style="padding:10px;text-align:right;vertical-align:middle;border-bottom:1px solid #f3f4f6;font-size:14px;font-weight:700">'+fmt(dahil)+' TL</td>'
       +'</tr>';
   });
 
