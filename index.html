@@ -1581,9 +1581,9 @@ function renderGrandTotal(){
   var toplamHariç=0,toplamKdv=0;
   sel.forEach(function(p){
     var s=getState(p.id);
-    var kdv=p.kdv||20;
-    var birimFiyat=s.birimFiyat||0;
-    var adet=s.adet||1;
+    var kdv=parseFloat(p.kdv)||20;
+    var birimFiyat=parseFloat(s.birimFiyat)||0;
+    var adet=parseInt(s.adet)||1;
     var hariç=birimFiyat*adet;
     toplamHariç+=hariç;
     toplamKdv+=hariç*(kdv/100);
@@ -1656,9 +1656,9 @@ function applyManual(id){
 }
 function refreshPrice(id){
   var s=getState(id);var p=products.find(function(x){return x.id===id;});if(!p)return;
-  var kdv=p.kdv||20;
-  var birimFiyat=s.birimFiyat||0;
-  var adet=s.adet||1;
+  var kdv=parseFloat(p.kdv)||20;
+  var birimFiyat=parseFloat(s.birimFiyat)||0;
+  var adet=parseInt(s.adet)||1;
   var toplamHariç=birimFiyat*adet;
   var kdvTutar=toplamHariç*(kdv/100);
   var toplamDahil=toplamHariç+kdvTutar;
